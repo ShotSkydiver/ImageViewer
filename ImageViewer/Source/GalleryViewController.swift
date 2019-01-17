@@ -21,6 +21,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
     fileprivate var seeAllCloseButton: UIButton? = nil
     fileprivate var thumbnailsButton: UIButton? = UIButton.thumbnailsButton()
     fileprivate var deleteButton: UIButton? = UIButton.deleteButton()
+    fileprivate var shareButton: UIButton? = UIButton.shareButton()
     fileprivate let scrubber = VideoScrubber()
 
     fileprivate weak var initialItemController: ItemController?
@@ -47,6 +48,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
     fileprivate var seeAllCloseLayout = ButtonLayout.pinRight(8, 16)
     fileprivate var thumbnailsLayout = ButtonLayout.pinLeft(8, 16)
     fileprivate var deleteLayout = ButtonLayout.pinRight(8, 66)
+    fileprivate var shareLayout = ButtonLayout.pinRight(8, 116)
     fileprivate var statusBarHidden = true
     fileprivate var overlayAccelerationFactor: CGFloat = 1
     fileprivate var rotationDuration = 0.15
@@ -87,6 +89,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
             case .footerViewLayout(let layout):                 footerLayout = layout
             case .closeLayout(let layout):                      closeLayout = layout
             case .deleteLayout(let layout):                     deleteLayout = layout
+            case .shareLayout(let layout):                      shareLayout = layout
             case .thumbnailsLayout(let layout):                 thumbnailsLayout = layout
             case .statusBarHidden(let hidden):                  statusBarHidden = hidden
             case .hideDecorationViewsOnLaunch(let hidden):      decorationViewsHidden = hidden
@@ -141,6 +144,15 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
 
                 case .none:                 deleteButton = nil
                 case .custom(let button):   deleteButton = button
+                case .builtIn:              break
+                }
+
+            case .shareButtonMode(let buttonMode):
+
+                switch buttonMode {
+
+                case .none:                 shareButton = nil
+                case .custom(let button):   shareButton = button
                 case .builtIn:              break
                 }
 
@@ -240,6 +252,15 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
         }
     }
 
+    fileprivate func configureShareButton() {
+
+        if let shareButton = shareButton {
+            shareButton.addTarget(self, action: #selector(GalleryViewController.showShareSheet), for: .touchUpInside)
+            shareButton.alpha = 0
+            self.view.addSubview(shareButton)
+        }
+    }
+
     fileprivate func configureScrubber() {
 
         scrubber.alpha = 0
@@ -260,6 +281,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
         configureCloseButton()
         configureThumbnailsButton()
         configureDeleteButton()
+        configureShareButton()
         configureScrubber()
 
         self.view.clipsToBounds = false
@@ -321,6 +343,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
         layoutButton(closeButton, layout: closeLayout)
         layoutButton(thumbnailsButton, layout: thumbnailsLayout)
         layoutButton(deleteButton, layout: deleteLayout)
+        layoutButton(shareButton, layout: shareLayout)
         layoutHeaderView()
         layoutFooterView()
         layoutScrubber()
@@ -435,6 +458,14 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
             self?.deleteButton?.isEnabled = true
             self?.view.isUserInteractionEnabled = true
         }
+    }
+
+    @objc fileprivate func showShareSheet() {
+        guard let firstVC = viewControllers?.first, let itemController = firstVC as? ImageViewController else { return }
+
+        guard let image = itemController.itemView.image else { return }
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        self.present(activityVC, animated: true)
     }
 
     //ThumbnailsimageBlock
@@ -568,6 +599,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
             self?.closeButton?.alpha = 0.0
             self?.thumbnailsButton?.alpha = 0.0
             self?.deleteButton?.alpha = 0.0
+            self?.shareButton?.alpha = 0.0
             self?.scrubber.alpha = 0.0
 
             }, completion: { [weak self] done in
@@ -612,6 +644,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
             self?.closeButton?.alpha = targetAlpha
             self?.thumbnailsButton?.alpha = targetAlpha
             self?.deleteButton?.alpha = targetAlpha
+            self?.shareButton?.alpha = targetAlpha
 
             if let _ = self?.viewControllers?.first as? VideoViewController {
 
@@ -695,6 +728,7 @@ open class GalleryViewController: UIPageViewController, ItemControllerDelegate {
             closeButton?.alpha = alpha
             thumbnailsButton?.alpha = alpha
             deleteButton?.alpha = alpha
+            shareButton?.alpha = alpha
             headerView?.alpha = alpha
             footerView?.alpha = alpha
 

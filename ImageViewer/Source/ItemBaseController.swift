@@ -16,7 +16,7 @@ public protocol ItemView {
 open class ItemBaseController<T: UIView>: UIViewController, ItemController, UIGestureRecognizerDelegate, UIScrollViewDelegate where T: ItemView {
 
     //UI
-    public var itemView = T()
+    open var itemView = T()
     let scrollView = UIScrollView()
     let activityIndicatorView = UIActivityIndicatorView(style: .white)
 
